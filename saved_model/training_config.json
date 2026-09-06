@@ -1,0 +1,19 @@
+{
+    "Model": "EfficientNetB0",
+    "Image Size": 224,
+    "Batch Size": 32,
+    "Epoch Stage1": 30,
+    "Epoch Stage2": 20,
+    "Optimizer": "AdamW",
+    "Learning Rate Stage1": 0.0001,
+    "Learning Rate Stage2": 1e-05,
+    "Loss": "Categorical Focal Loss",
+    "Classes": [
+        "Antracnose",
+        "Culvaria",
+        "Dryness",
+        "Fungal Disease",
+        "Magnesium Deficiency",
+        "Serangan Apogonia"
+    ]
+}

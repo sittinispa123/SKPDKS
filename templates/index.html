@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#087443">
+  <title>- Klasifikasi Penyakit Daun Kelapa Sawit</title>
+  <style>
+    :root{
+      --green:#0f804d; --green-dark:#00543c; --green-2:#0b8b51;
+      --yellow:#ffd20a; --ink:#172235; --muted:#586477;
+      --soft:#eaf7ef; --line:#e7edf0; --white:#fff; --bg:#fbfcfb;
+      --shadow:0 8px 25px rgba(16,45,34,.09);
+      --radius:20px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+    button,input{font:inherit}
+    button{cursor:pointer;border:0}
+    a{text-decoration:none;color:inherit}
+    .container{width:min(1180px,calc(100% - 32px));margin:auto}
+
+    /* Header */
+    .header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+    .nav{height:78px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--green);font-size:20px}
+    .brand-mark{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:#fff}
+    .menu-btn{display:none;background:transparent;font-size:28px;color:#1d3440}
+    .nav-links{display:flex;align-items:center;gap:42px}
+    .nav-link{height:78px;display:flex;align-items:center;gap:10px;font-weight:700;color:#263244;border-bottom:3px solid transparent}
+    .nav-link.active{color:var(--green);border-bottom-color:var(--green)}
+
+    /* Hero */
+    .hero{margin-top:0;min-height:412px;border-radius:0 0 18px 18px;overflow:hidden;position:relative;
+      background:
+      radial-gradient(circle at 91% 22%,rgba(255,221,54,.8),transparent 23%),
+      linear-gradient(105deg,#087443 0%,#0c7d49 47%,#1a8553 62%,#6fae4d 100%);
+    }
+    .hero:after{content:"";position:absolute;right:-70px;top:-45px;width:60%;height:125%;
+      background:
+      repeating-linear-gradient(155deg,transparent 0 16px,rgba(20,68,25,.65) 17px 20px,transparent 21px 42px);
+      transform:rotate(-7deg);opacity:.42;filter:blur(1px)}
+    .hero-content{position:relative;z-index:2;padding:42px 42px 46px;max-width:610px;color:#fff}
+    .pill{display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;background:rgba(8,151,84,.45);font-weight:700;margin-bottom:22px}
+    .hero h1{font-size:clamp(42px,5vw,62px);line-height:1.05;letter-spacing:-1.8px;margin-bottom:20px}
+    .hero h1 span{color:var(--yellow)}
+    .hero p{font-size:18px;max-width:590px;margin-bottom:28px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 25px;border-radius:999px;font-weight:800;transition:.2s;box-shadow:0 6px 16px rgba(0,0,0,.08)}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{background:var(--yellow);color:#18303c}
+    .btn-light{background:#fff;color:var(--green)}
+    .pattern{position:absolute;right:39%;bottom:25px;z-index:2;width:72px;height:72px;opacity:.7;background-image:radial-gradient(#6be28e 3px,transparent 4px);background-size:18px 18px}
+
+    /* Sections */
+    section{padding:34px 0}
+    .section-title{display:flex;align-items:center;gap:12px;color:var(--green-dark);font-size:24px;margin-bottom:20px}
+    .section-title .icon{font-size:26px}
+    .system-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .info-card{background:#fff;border-radius:18px;padding:20px;display:flex;align-items:center;gap:15px;box-shadow:var(--shadow);min-height:112px}
+    .info-icon{width:72px;height:72px;border-radius:16px;background:var(--soft);display:grid;place-items:center;color:var(--green);font-size:34px;flex:0 0 auto}
+    .info-card small{display:block;font-size:15px}
+    .info-card strong{display:block;color:var(--green);font-size:18px;margin-top:5px}
+
+    /* Disease cards */
+    .disease-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .disease-card{background:#fff;border-radius:16px;padding:20px 20px 20px 22px;box-shadow:var(--shadow);border-left:4px solid #08a660;position:relative;min-height:156px}
+    .number{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:800;float:left;margin-right:14px}
+    .disease-card h3{font-size:17px;margin:2px 35px 8px 0}
+    .disease-card p{font-size:14px;color:#465267}
+    .disease-icon{position:absolute;right:18px;top:21px;color:#069956;font-size:28px}
+    .detail-btn{margin-top:13px;background:#eef9f2;color:var(--green);font-weight:800;border-radius:999px;padding:8px 13px;font-size:13px}
+
+    /* CTA */
+    .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .check-box,.how-box{border-radius:20px;min-height:225px;padding:30px;position:relative;overflow:hidden}
+    .check-box{background:linear-gradient(135deg,#087443,#22a95c);color:#fff;display:flex;align-items:center;gap:25px}
+    .check-illustration{font-size:70px;min-width:95px;text-align:center}
+    .check-box h2,.how-box h2{font-size:25px;margin-bottom:9px}
+    .check-box p{margin-bottom:17px}
+    .how-box{background:#edf9f2;color:var(--green-dark)}
+    .how-list{list-style:none;margin-top:14px;display:grid;gap:8px}
+    .how-list li{display:flex;align-items:center;gap:10px}
+    .step{width:25px;height:25px;border-radius:50%;background:#16a461;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+
+    /* Classification */
+    .classifier{display:none;padding-top:22px}
+    .classifier.show{display:block}
+    .class-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .upload-card,.result-card{background:#fff;border-radius:20px;padding:25px;box-shadow:var(--shadow)}
+    .dropzone{border:2px dashed #b8daca;border-radius:18px;min-height:250px;display:grid;place-items:center;text-align:center;padding:25px;background:#f7fcf9}
+    .dropzone img{max-width:100%;max-height:230px;border-radius:14px;display:none}
+    .dropzone.has-image .upload-content{display:none}
+    .dropzone.has-image img{display:block}
+    .upload-content .camera{font-size:55px;color:var(--green)}
+    input[type=file]{display:none}
+    .result-card{min-height:300px}
+    .result-empty{text-align:center;color:var(--muted);padding:60px 20px}
+    .result-empty .big{font-size:55px;margin-bottom:10px}
+    .result-main{display:none}
+    .result-main.show{display:block}
+    .confidence{height:10px;background:#e6eee9;border-radius:999px;overflow:hidden;margin:8px 0 15px}
+    .confidence span{display:block;height:100%;background:#10a45d;border-radius:999px;width:0}
+    .solution-box{background:#eff9f3;border-radius:15px;padding:17px;margin-top:14px}
+    .solution-box h4{color:var(--green);margin-bottom:7px}
+    .steps{padding-left:20px;color:#465267}
+    .steps li{margin:4px 0}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(5,29,20,.55);z-index:100;display:none;align-items:center;justify-content:center;padding:18px}
+    .modal.open{display:flex}
+    .modal-card{width:min(700px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;padding:28px;position:relative}
+    .close{position:absolute;right:18px;top:15px;width:40px;height:40px;border-radius:50%;background:#eef5f1;color:var(--green);font-size:23px}
+    .modal-card h2{color:var(--green-dark);font-size:27px;margin-right:45px}
+    .modal-card .lead{color:#536174;margin:7px 0 18px}
+    .modal-section{margin-top:18px}
+    .modal-section h4{color:var(--green);margin-bottom:7px}
+    .modal-section ul{padding-left:20px;color:#4d596a}
+    .modal-section li{margin:5px 0}
+
+    footer{background:#004d3a;color:#fff;margin-top:28px;text-align:center;padding:32px 20px;position:relative;overflow:hidden}
+    footer .leaf{font-size:26px;color:#23c878}
+    footer p{margin-top:8px}
+    footer strong{display:block;color:#20bf70;font-size:18px;margin-top:4px}
+
+    @media(max-width:900px){
+      .system-grid{grid-template-columns:repeat(2,1fr)}
+      .disease-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:700px){
+      .container{width:min(100% - 24px,600px)}
+      .header{position:sticky}
+      .nav{height:64px}
+      .brand{font-size:17px}
+      .brand-mark{width:34px;height:34px}
+      .menu-btn{display:block;order:2}
+      .nav-links{position:absolute;left:12px;right:12px;top:64px;background:#fff;border-radius:0 0 18px 18px;box-shadow:var(--shadow);display:none;flex-direction:column;align-items:stretch;gap:0;padding:8px 15px}
+      .nav-links.open{display:flex}
+      .nav-link{height:48px;border-bottom:0;padding:0 8px}
+      .nav-link.active{background:#eef9f2;border-radius:10px}
+      .hero{min-height:455px;border-radius:0 0 18px 18px}
+      .hero-content{padding:30px 24px}
+      .hero h1{font-size:42px}
+      .hero p{font-size:16px}
+      .pattern{right:20px;bottom:22px}
+      section{padding:27px 0}
+      .section-title{font-size:21px}
+      .system-grid{grid-template-columns:1fr 1fr;gap:11px}
+      .info-card{padding:13px;min-height:105px;gap:9px}
+      .info-icon{width:52px;height:52px;font-size:25px;border-radius:13px}
+      .info-card small{font-size:12px}
+      .info-card strong{font-size:15px}
+      .disease-grid{grid-template-columns:1fr;gap:13px}
+      .disease-card{min-height:145px;padding:17px}
+      .cta-grid,.class-layout{grid-template-columns:1fr}
+      .check-box,.how-box{min-height:auto;padding:23px}
+      .check-box{gap:12px}
+      .check-illustration{font-size:52px;min-width:62px}
+      .check-box h2,.how-box h2{font-size:22px}
+      .classifier{padding-top:10px}
+    }
+    @media(max-width:390px){
+      .system-grid{grid-template-columns:1fr}
+      .hero h1{font-size:37px}
+      .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container nav">
+    <a class="brand" href="#dashboard">
+      <span class="brand-mark">🌿</span>SKPDKS<span></span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Buka menu">☰</button>
+    <nav class="nav-links" id="navLinks">
+      <a class="nav-link active" href="#dashboard">⌂ &nbsp;Dashboard</a>
+      <a class="nav-link" href="#klasifikasi">⌕ &nbsp;Klasifikasi</a>
+    </nav>
+  </div>
+</header>
+
+<main id="dashboard">
+  <div class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="pill">🌱 &nbsp; Sistem Klasifikasi</div>
+        <h1>SKPDKS<br><span>Sistem Klasifikasi Penyakit Daun Kelapa Sawit</span></h1>
+        <p>Sistem berbasis Convolutional Neural Network (CNN) dengan arsitektur EfficientNet-B0 untuk membantu mengenali penyakit daun kelapa sawit secara akurat.</p>
+        <a class="btn btn-primary" href="#klasifikasi">⌕ &nbsp; Mulai Klasifikasi</a>
+      </div>
+      <div class="pattern"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="icon">▥</span> Informasi Sistem</h2>
+      <div class="system-grid">
+        <div class="info-card"><div class="info-icon">🧠</div><div><small>Model</small><strong>EfficientNet-B0</strong></div></div>
+        <div class="info-card"><div class="info-icon">▣</div><div><small>Metode</small><strong>CNN</strong></div></div>
+        <div class="info-card"><div class="info-icon">⚗</div><div><small>Jumlah Kelas</small><strong>6 Penyakit</strong></div></div>
+        <div class="info-card"><div class="info-icon">▣</div><div><small>Input</small><strong>Citra Daun</strong></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="icon">🌿</span> Penyakit yang Dapat Dikenali</h2>
+      <div class="disease-grid" id="diseaseGrid"></div>
+    </section>
+
+    <section>
+      <div class="cta-grid">
+        <div class="check-box">
+          <div class="check-illustration">📋🔎</div>
+          <div>
+            <h2>Periksa Kondisi Daun</h2>
+            <p>Unggah gambar daun kelapa sawit untuk mendapatkan hasil klasifikasi dari model AI kami.</p>
+            <a class="btn btn-light" href="#klasifikasi">🚀 &nbsp; Mulai Pemeriksaan</a>
+          </div>
+        </div>
+        <div class="how-box">
+          <h2>💡 &nbsp;Cara Menggunakan</h2>
+          <ol class="how-list">
+            <li><span class="step">1</span> Pilih gambar daun kelapa sawit</li>
+            <li><span class="step">2</span> Unggah gambar ke sistem</li>
+            <li><span class="step">3</span> Tunggu proses klasifikasi</li>
+            <li><span class="step">4</span> Lihat penyakit, solusi, dan cara penanganan</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="klasifikasi" class="classifier">
+      <h2 class="section-title">🔎 Klasifikasi & Rekomendasi Penanganan</h2>
+      <div class="class-layout">
+        <div class="upload-card">
+          <h3 style="color:#075e3b;margin-bottom:14px">Unggah Citra Daun</h3>
+          <label class="dropzone" id="dropzone" for="fileInput">
+            <div class="upload-content">
+              <div class="camera">📷</div>
+              <strong>Pilih gambar daun kelapa sawit</strong>
+              <p style="color:#6b7788;margin:5px 0 15px">JPG, JPEG, atau PNG</p>
+              <span class="btn btn-primary">Pilih Gambar</span>
+            </div>
+            <img id="preview" alt="Preview daun">
+          </label>
+          <input id="fileInput" type="file" accept="image/*">
+          <button class="btn btn-primary" id="predictBtn" style="width:100%;margin-top:15px">🔍 Analisis Citra</button>
+          <p style="font-size:12px;color:#748091;margin-top:10px;text-align:center">Siap dihubungkan ke endpoint Flask <b>/predict</b>.</p>
+        </div>
+
+        <div class="result-card">
+          <div class="result-empty" id="resultEmpty">
+            <div class="big">🌿</div>
+            <h3>Hasil klasifikasi akan tampil di sini</h3>
+            <p>Unggah citra lalu tekan <b>Analisis Citra</b>.</p>
+          </div>
+          <div class="result-main" id="resultMain">
+            <h3 id="resultTitle" style="font-size:25px;color:#075e3b"></h3>
+            <p id="resultDescription" style="color:#566275"></p>
+            <div style="margin-top:14px"><b>Tingkat Kepercayaan</b><span id="confidenceText" style="float:right;color:#087443;font-weight:800"></span></div>
+            <div class="confidence"><span id="confidenceBar"></span></div>
+            <div class="solution-box">
+              <h4>💡 Solusi</h4>
+              <p id="resultSolution"></p>
+            </div>
+            <div class="solution-box">
+              <h4>🛠 Cara Penanganan</h4>
+              <ol class="steps" id="resultSteps"></ol>
+            </div>
+            <div class="solution-box">
+              <h4>🛡 Pencegahan</h4>
+              <ul class="steps" id="resultPrevention"></ul>
+            </div>
+            <div class="solution-box" id="top3Box" style="display:none">
+              <h4>📊 Top-3 Kemungkinan</h4>
+              <div id="top3List"></div>
+            </div>
+            <div class="solution-box" id="gradcamBox" style="display:none">
+              <h4>🔍 Visualisasi Grad-CAM</h4>
+              <p style="color:#566275;font-size:13px;margin-bottom:10px">Area yang menjadi perhatian model saat melakukan klasifikasi.</p>
+              <img id="gradcamImage" alt="Visualisasi Grad-CAM" style="width:100%;border-radius:14px;display:block">
+            </div>
+            <button class="detail-btn" id="detailFromResult">Lihat penjelasan lengkap →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <button class="close" id="closeModal">×</button>
+    <h2 id="modalTitle"></h2>
+    <p class="lead" id="modalDescription"></p>
+    <div class="modal-section"><h4>💡 Solusi</h4><p id="modalSolution"></p></div>
+    <div class="modal-section">
+  <h4>🌱 Rekomendasi Pupuk</h4>
+
+<ul id="modalFertilizer"></ul>
+</div>
+    <div class="modal-section"><h4>🛠 Cara Penanganan</h4><ul id="modalSteps"></ul></div>
+    <div class="modal-section"><h4>🛡 Pencegahan</h4><ul id="modalPrevention"></ul></div>
+  </div>
+</div>
+
+<footer>
+  <div class="leaf"></div>
+  <p>© 2026 Sistem Klasifikasi Penyakit Daun Kelapa Sawit</p>
+</footer>
+
+<script>
+const diseases = [
+  {
+    name:"Anthracnose", icon:"◌",
+description: "Penyakit pada daun kelapa sawit yang berkaitan dengan infeksi jamur dan ditandai dengan munculnya bercak berwarna cokelat hingga kehitaman. Bercak dapat berkembang menjadi nekrosis yang menyebabkan jaringan daun mengering dan mengalami kerusakan.",
+
+solution: "Kurangi kelembapan berlebih, perbaiki sirkulasi udara dan drainase, serta lakukan sanitasi terhadap bagian tanaman yang terinfeksi. Pangkas dan singkirkan daun dengan infeksi berat untuk mengurangi sumber infeksi. Apabila diperlukan, gunakan fungisida yang sesuai dengan label produk dan rekomendasi teknis. Lakukan pemupukan secara berimbang untuk mendukung pertumbuhan dan kondisi fisiologis tanaman.",
+
+recommendedFertilizer: [
+"Pupuk NPK berimbang untuk memenuhi kebutuhan unsur hara makro sesuai umur tanaman, kondisi tanah, dan kebutuhan tanaman.",
+"KCl (MOP) sebagai sumber Kalium (K) untuk mendukung pertumbuhan dan fungsi fisiologis tanaman.",
+"Kieserite sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama apabila berdasarkan analisis tanah atau daun terdapat kekurangan Mg atau S.",
+"Dolomit sebagai sumber Kalsium (Ca) dan Magnesium (Mg), terutama apabila kondisi tanah memerlukan pengapuran berdasarkan hasil analisis tanah.",
+"Pemupukan berfungsi mendukung pertumbuhan dan kondisi tanaman, bukan sebagai pengendalian langsung terhadap infeksi jamur."
+],
+
+steps: [
+"Lakukan pemeriksaan daun secara rutin untuk mendeteksi gejala Anthracnose sejak dini.",
+"Pangkas bagian atau daun yang mengalami infeksi berat.",
+"Bersihkan dan singkirkan sisa daun yang sakit dari sekitar tanaman.",
+"Perbaiki drainase untuk mengurangi kelembapan dan mencegah genangan.",
+"Jaga sirkulasi udara di sekitar tajuk tanaman.",
+"Lakukan pemupukan berimbang sesuai umur tanaman dan kondisi tanah.",
+"Perhatikan kecukupan unsur K, Mg, dan Ca berdasarkan kondisi tanaman serta hasil analisis tanah atau daun.",
+"Gunakan fungisida yang sesuai dengan label produk dan rekomendasi teknis apabila pengendalian kimia diperlukan."
+],
+
+prevention: [
+"Gunakan bibit dan bahan tanam yang sehat.",
+"Lakukan monitoring tanaman secara rutin.",
+"Deteksi gejala penyakit sejak tahap awal.",
+"Jaga kebersihan kebun dan lakukan sanitasi terhadap daun yang terinfeksi.",
+"Kurangi kelembapan berlebih di sekitar tanaman.",
+"Jaga sirkulasi udara pada tajuk tanaman.",
+"Pastikan sistem drainase kebun berfungsi dengan baik.",
+"Lakukan pemupukan secara berimbang sesuai kondisi tanaman dan tanah.",
+"Hindari kerusakan pada daun dan bagian tanaman.",
+"Gunakan fungisida sesuai label dan rekomendasi teknis apabila diperlukan."],
+
+
+  },
+  {
+    name:"Curvularia", icon:"☁",
+    description: "Penyakit daun kelapa sawit yang disebabkan oleh infeksi jamur Curvularia dan ditandai dengan munculnya bercak memanjang atau tidak beraturan berwarna cokelat hingga cokelat kehitaman yang dapat berkembang dan menyebabkan jaringan daun mengering.",
+    solution: "Kurangi kelembapan di sekitar tanaman, perbaiki sirkulasi udara dan drainase, lakukan sanitasi terhadap daun yang terinfeksi, serta gunakan fungisida sesuai label dan rekomendasi teknis apabila diperlukan. Berikan pupuk secara berimbang untuk mendukung pertumbuhan dan kondisi fisiologis tanaman.",
+    recommendedFertilizer: ["Pupuk NPK berimbang untuk memenuhi kebutuhan unsur hara makro sesuai umur tanaman dan kondisi tanah.","KCl (MOP) sebagai sumber Kalium (K) untuk mendukung pertumbuhan, fungsi fisiologis, dan ketahanan tanaman terhadap tekanan lingkungan.","Kieserite sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama apabila berdasarkan analisis tanah atau daun terdapat kekurangan Mg atau S.","Dolomit sebagai sumber Kalsium (Ca) dan Magnesium (Mg), terutama apabila kondisi tanah memerlukan pengapuran berdasarkan hasil analisis tanah." ],
+    steps: ["Identifikasi daun yang menunjukkan gejala bercak Curvularia.", "Pangkas bagian atau daun yang mengalami infeksi berat.","Bersihkan dan singkirkan sisa daun yang sakit dari sekitar tanaman.","Perbaiki drainase dan sirkulasi udara untuk mengurangi kelembapan berlebih.","Lakukan pemupukan berimbang sesuai umur tanaman, kondisi tanah, dan kebutuhan tanaman.", "Perhatikan kecukupan unsur K, Mg, dan Ca berdasarkan kondisi tanaman dan hasil analisis tanah atau daun.","Gunakan fungisida yang sesuai label dan rekomendasi teknis apabila tingkat serangan memerlukan pengendalian kimia."],
+    prevention: ["Gunakan bibit dan bahan tanam yang sehat.","Lakukan monitoring tanaman secara rutin untuk mendeteksi gejala sejak dini.",
+    "Jaga kebersihan kebun dan lakukan sanitasi terhadap daun yang sakit.",
+    "Kurangi kelembapan berlebih dan jaga sirkulasi udara di sekitar tanaman.",
+    "Pastikan drainase kebun berfungsi dengan baik dan tidak terjadi genangan.",
+    "Lakukan pemupukan secara berimbang sesuai kondisi tanaman dan tanah.",
+    "Hindari kerusakan pada daun dan tanaman yang dapat memperbesar risiko infeksi.",
+    "Gunakan fungisida sesuai label dan rekomendasi teknis apabila diperlukan."],
+  },
+  {
+  name:"Dryness", icon:"☼",
+  description: "Kondisi kekeringan pada daun kelapa sawit yang terjadi ketika tanaman mengalami kekurangan air dalam waktu tertentu. Gejalanya dapat ditandai dengan daun menguning, kehilangan kesegaran, kemudian mengering dan mengalami penurunan kualitas jaringan daun. Kondisi kekeringan yang berlangsung lama dapat menghambat pertumbuhan dan menurunkan kemampuan tanaman dalam melakukan fotosintesis.",
+  solution: "Pastikan ketersediaan air bagi tanaman, terutama selama periode musim kemarau. Pertahankan kelembapan tanah dengan penggunaan mulsa, kurangi kompetisi gulma, dan perbaiki kondisi tanah serta sistem pengelolaan air. Pemupukan dilakukan secara berimbang untuk mendukung pertumbuhan tanaman, tetapi pupuk bukan pengganti kebutuhan air.",
+  recommendedFertilizer: [
+    "Pupuk NPK berimbang untuk memenuhi kebutuhan unsur Nitrogen (N), Fosfor (P), dan Kalium (K) sesuai umur tanaman dan kondisi tanah.",
+    "KCl (MOP) sebagai sumber Kalium (K) untuk mendukung fungsi fisiologis tanaman dan membantu menjaga keseimbangan air dalam jaringan tanaman.",
+    "Kieserite sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama apabila berdasarkan analisis tanah atau daun terdapat kekurangan Mg atau S.",
+    "Dolomit sebagai sumber Kalsium (Ca) dan Magnesium (Mg), terutama apabila kondisi tanah membutuhkan pengapuran berdasarkan hasil analisis tanah."],
+
+  steps: [
+    "Periksa kelembapan tanah dan kondisi perakaran tanaman.",
+    "Pastikan tanaman memperoleh air yang cukup, terutama selama periode kering.",
+    "Gunakan mulsa organik di sekitar tanaman untuk membantu mempertahankan kelembapan tanah.",
+    "Kurangi pertumbuhan gulma yang dapat bersaing dengan tanaman dalam memperoleh air dan unsur hara.",
+    "Perbaiki kondisi tanah dan sistem pengelolaan air sesuai kondisi kebun.",
+    "Lakukan pemupukan NPK secara berimbang sesuai umur tanaman dan kondisi tanah.",
+    "Perhatikan kecukupan unsur K, Mg, dan Ca berdasarkan kondisi tanaman serta hasil analisis tanah atau daun.",
+    "Hindari pemberian pupuk secara berlebihan ketika tanaman mengalami kekurangan air yang berat."],
+
+  prevention: [
+    "Pertahankan kelembapan tanah, terutama selama musim kemarau.",
+    "Lakukan pemantauan kondisi tanaman dan kelembapan tanah secara rutin.",
+    "Pastikan sistem irigasi atau pengelolaan air berfungsi dengan baik.",
+    "Gunakan mulsa organik untuk membantu mengurangi penguapan air dari permukaan tanah.",
+    "Kurangi kompetisi gulma di sekitar tanaman.",
+    "Jaga kondisi tanah agar mampu menyimpan air dengan baik.",
+    "Lakukan pemupukan secara berimbang berdasarkan umur tanaman dan kondisi tanah.",
+    "Lakukan pemantauan lebih intensif selama periode musim kemarau."],
+  },
+  {
+  name:"Fungal Disease", icon:"☀",
+    
+  description: "Penyakit pada daun kelapa sawit yang berkaitan dengan infeksi jamur dan dapat menyebabkan kerusakan pada jaringan daun. Gejalanya dapat berupa munculnya bercak, perubahan warna jaringan, hingga bagian daun yang mengering. Perkembangan infeksi dapat dipengaruhi oleh kelembapan yang tinggi, sirkulasi udara yang kurang baik, serta keberadaan jaringan tanaman yang telah terinfeksi.",
+
+  solution: "Lakukan sanitasi secara rutin dengan membuang bagian tanaman yang terinfeksi, kurangi kelembapan berlebih, perbaiki sirkulasi udara dan drainase, serta identifikasi sumber infeksi. Pemupukan dilakukan secara berimbang untuk mendukung pertumbuhan dan kondisi fisiologis tanaman. Apabila serangan memerlukan pengendalian kimia, gunakan fungisida yang sesuai dengan diagnosis, label produk, dan rekomendasi tenaga teknis.",
+
+  recommendedFertilizer: [
+    "Pupuk NPK berimbang untuk memenuhi kebutuhan unsur Nitrogen (N), Fosfor (P), dan Kalium (K) sesuai umur tanaman dan kondisi tanah.",
+    "KCl (MOP) sebagai sumber Kalium (K) untuk mendukung pertumbuhan dan fungsi fisiologis tanaman.",
+    "Kieserite sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama apabila berdasarkan analisis tanah atau daun terdapat kekurangan Mg atau S.",
+    "Dolomit sebagai sumber Kalsium (Ca) dan Magnesium (Mg), terutama apabila kondisi tanah memerlukan pengapuran berdasarkan hasil analisis tanah."
+  ],
+
+  steps: [
+    "Identifikasi daun yang menunjukkan gejala infeksi jamur.",
+    "Pangkas dan buang bagian daun yang mengalami infeksi berat.",
+    "Bersihkan sisa daun atau jaringan tanaman yang terinfeksi dari sekitar tanaman.",
+    "Sanitasi alat pemangkasan setelah digunakan pada tanaman yang sakit.",
+    "Perbaiki ventilasi atau sirkulasi udara pada tajuk tanaman.",
+    "Perbaiki drainase untuk mengurangi kelembapan dan mencegah genangan.",
+    "Lakukan pemupukan secara berimbang sesuai umur tanaman dan kondisi tanah.",
+    "Perhatikan kecukupan unsur K, Mg, dan Ca berdasarkan kondisi tanaman serta hasil analisis tanah atau daun.",
+    "Gunakan fungisida yang sesuai dengan diagnosis, label produk, dan rekomendasi tenaga teknis apabila diperlukan."
+  ],
+
+  prevention: [
+    "Lakukan monitoring tanaman secara rutin untuk mendeteksi gejala sejak dini.",
+    "Jaga kebersihan kebun dan lakukan sanitasi terhadap bagian tanaman yang terinfeksi.",
+    "Hindari kondisi kelembapan yang terlalu tinggi di sekitar tanaman.",
+    "Jaga sirkulasi udara pada tajuk tanaman.",
+    "Pastikan sistem drainase kebun berfungsi dengan baik.",
+    "Gunakan bibit dan bahan tanam yang sehat.",
+    "Hindari kerusakan pada daun dan bagian tanaman yang dapat meningkatkan risiko infeksi.",
+    "Lakukan pemupukan secara berimbang sesuai kebutuhan tanaman dan kondisi tanah.",
+    "Gunakan fungisida sesuai label dan rekomendasi teknis apabila diperlukan."],
+  },
+  {
+  name:"Magnesium Deficiency", icon:"⌁",
+  description: "Kondisi kekurangan unsur Magnesium (Mg) pada tanaman kelapa sawit yang dapat menyebabkan perubahan warna pada daun. Gejala umumnya lebih mudah terlihat pada daun yang lebih tua, karena magnesium merupakan unsur yang dapat dipindahkan dari jaringan tua ke jaringan muda. Daun dapat menunjukkan warna hijau yang tidak merata, menguning di antara tulang daun, sementara bagian tulang daun dapat tetap lebih hijau.",
+
+  solution: "Lakukan pemeriksaan gejala serta kondisi tanah atau daun untuk memastikan adanya kekurangan Magnesium. Berikan pupuk yang mengandung Magnesium sesuai kebutuhan tanaman dan rekomendasi pemupukan. Pemupukan sebaiknya dilakukan secara berimbang dengan memperhatikan kondisi tanah, umur tanaman, dan hasil analisis tanah atau daun.",
+
+  recommendedFertilizer: [
+    "Kieserite (MgSO4·H2O) sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama untuk memenuhi kebutuhan Mg pada tanaman yang mengalami kekurangan.",
+    "Dolomit sebagai sumber Magnesium (Mg) dan Kalsium (Ca), terutama apabila kondisi tanah juga membutuhkan pengapuran atau terdapat kebutuhan Ca berdasarkan hasil analisis tanah.",
+    "Pupuk NPK yang mengandung Magnesium dapat digunakan sebagai bagian dari pemupukan berimbang sesuai kebutuhan tanaman dan rekomendasi agronomi.",
+    "Pemberian sumber Magnesium sebaiknya didasarkan pada hasil analisis tanah atau daun agar jenis dan jumlah pupuk yang diberikan sesuai dengan kebutuhan tanaman."
+  ],
+
+  steps: [
+    "Amati pola perubahan warna pada daun, terutama pada daun yang lebih tua.",
+    "Periksa kondisi tanah dan tanaman untuk mengetahui kemungkinan kekurangan Magnesium.",
+    "Lakukan analisis tanah atau daun apabila fasilitas pemeriksaan tersedia.",
+    "Berikan Kieserite sebagai sumber Magnesium dan Sulfur sesuai rekomendasi pemupukan.",
+    "Gunakan dolomit apabila tanaman atau kondisi tanah juga memerlukan sumber Kalsium dan Magnesium serta membutuhkan pengapuran.",
+    "Lakukan pemupukan secara berimbang dengan memperhatikan kebutuhan unsur hara lainnya.",
+    "Pantau perubahan warna dan pertumbuhan daun setelah pemupukan.",
+    "Evaluasi kembali kondisi tanaman apabila gejala kekurangan Magnesium tetap terlihat."
+  ],
+
+  prevention: [
+    "Lakukan pemupukan secara berimbang sesuai kebutuhan tanaman.",
+    "Gunakan analisis tanah atau daun sebagai dasar dalam menentukan program pemupukan.",
+    "Pastikan kebutuhan Magnesium tanaman tercukupi.",
+    "Gunakan Kieserite atau sumber Magnesium lainnya sesuai rekomendasi agronomi.",
+    "Gunakan dolomit apabila kondisi tanah membutuhkan pengapuran.",
+    "Pantau pertumbuhan dan perubahan warna daun secara berkala.",
+    "Hindari pemberian pupuk secara berlebihan atau tidak sesuai kebutuhan tanaman.",
+    "Evaluasi kondisi tanah secara berkala untuk menjaga keseimbangan unsur hara."
+  ],
+},
+  {
+    name:"Serangan Apogonia", icon:"♧",
+  description: "Serangan Apogonia merupakan kerusakan pada daun kelapa sawit yang disebabkan oleh aktivitas hama kumbang Apogonia. Hama ini dapat memakan jaringan daun sehingga menimbulkan lubang atau bagian daun yang rusak. Jika serangan terjadi dalam jumlah tinggi, kerusakan daun dapat mengurangi luas permukaan daun yang berfungsi dalam proses fotosintesis dan berpotensi mengganggu pertumbuhan tanaman.",
+
+  solution: "Lakukan monitoring populasi dan tingkat kerusakan daun secara rutin serta terapkan pengendalian hama terpadu (PHT). Jaga kebersihan areal perkebunan dan kurangi kondisi yang dapat mendukung perkembangan hama. Pemupukan dilakukan secara berimbang untuk menjaga pertumbuhan dan kondisi tanaman, tetapi pupuk bukan merupakan pengendali langsung hama Apogonia. Apabila tingkat serangan telah melampaui ambang pengendalian, gunakan metode pengendalian yang sesuai berdasarkan rekomendasi petugas atau tenaga teknis perkebunan.",
+
+  recommendedFertilizer: [
+    "Pupuk NPK berimbang untuk memenuhi kebutuhan Nitrogen (N), Fosfor (P), dan Kalium (K) sesuai umur tanaman dan kondisi tanah.",
+    "KCl (MOP) sebagai sumber Kalium (K) untuk mendukung pertumbuhan dan fungsi fisiologis tanaman.",
+    "Kieserite sebagai sumber Magnesium (Mg) dan Sulfur (S), terutama apabila berdasarkan analisis tanah atau daun terdapat kekurangan Mg atau S.",
+    "Dolomit sebagai sumber Kalsium (Ca) dan Magnesium (Mg), terutama apabila kondisi tanah memerlukan pengapuran berdasarkan hasil analisis tanah.",
+    "Pemupukan diberikan berdasarkan kebutuhan tanaman dan kondisi tanah, bukan sebagai pengganti pengendalian hama."
+  ],
+
+  steps: [
+    "Lakukan inspeksi daun secara berkala untuk mengetahui adanya kerusakan akibat serangan Apogonia.",
+    "Lakukan pengamatan pada waktu yang sesuai, termasuk malam hari apabila diperlukan untuk membantu menemukan aktivitas hama.",
+    "Catat tingkat kerusakan daun dan populasi hama sebagai dasar evaluasi serangan.",
+    "Jaga kebersihan areal perkebunan dan kurangi tempat yang berpotensi menjadi lokasi perkembangan hama.",
+    "Pertahankan kondisi tanaman melalui pemupukan yang berimbang sesuai kebutuhan tanaman.",
+    "Perhatikan kecukupan unsur hara berdasarkan kondisi tanaman dan hasil analisis tanah atau daun.",
+    "Terapkan pengendalian hama terpadu sesuai tingkat serangan.",
+    "Apabila populasi atau kerusakan telah melampaui ambang pengendalian, gunakan metode pengendalian yang direkomendasikan petugas atau tenaga teknis perkebunan."
+  ],
+
+  prevention: [
+    "Lakukan monitoring populasi hama dan kondisi daun secara rutin.",
+    "Deteksi kerusakan daun sejak tahap awal.",
+    "Jaga kebersihan areal perkebunan.",
+    "Kurangi kondisi atau tempat yang dapat mendukung perkembangan hama.",
+    "Pertahankan pertumbuhan tanaman melalui pemupukan yang berimbang.",
+    "Gunakan bibit dan bahan tanam yang sehat.",
+    "Terapkan pengendalian hama terpadu (PHT).",
+    "Lakukan pengendalian berdasarkan tingkat serangan dan rekomendasi teknis.",
+    "Hindari penggunaan insektisida secara rutin tanpa mempertimbangkan tingkat serangan."
+  ],
+  }
+];
+
+const grid = document.getElementById("diseaseGrid");
+diseases.forEach((d,i)=>{
+  const card = document.createElement("article");
+  card.className = "disease-card";
+  card.innerHTML = `
+    <div class="number">${String(i+1).padStart(2,"0")}</div>
+    <div class="disease-icon">${d.icon}</div>
+    <h3>${d.name}</h3>
+    <p>${d.description}</p>
+    <button class="detail-btn" data-index="${i}">Solusi & Penanganan →</button>
+  `;
+  grid.appendChild(card);
+});
+
+const modal = document.getElementById("modal");
+function showDisease(i){
+const d = diseases[i];
+
+  document.getElementById("modalTitle").textContent = d.name;
+
+  document.getElementById("modalDescription").textContent =
+    d.description;
+
+  document.getElementById("modalSolution").textContent =
+    d.solution;
+
+  // REKOMENDASI PUPUK
+  document.getElementById("modalFertilizer").innerHTML =
+    (d.recommendedFertilizer || [])
+      .map(x => `<li>${x}</li>`)
+      .join("");
+
+  // CARA PENANGANAN
+  document.getElementById("modalSteps").innerHTML =
+    (d.steps || [])
+      .map(x => `<li>${x}</li>`)
+      .join("");
+
+  // PENCEGAHAN
+  document.getElementById("modalPrevention").innerHTML =
+    (d.prevention || [])
+      .map(x => `<li>${x}</li>`)
+      .join("");
+
+  modal.classList.add("open");
+}
+grid.addEventListener("click",e=>{
+  const btn = e.target.closest(".detail-btn");
+  if(btn) showDisease(Number(btn.dataset.index));
+});
+document.getElementById("closeModal").onclick=()=>modal.classList.remove("open");
+modal.addEventListener("click",e=>{if(e.target===modal) modal.classList.remove("open")});
+
+document.getElementById("menuBtn").onclick=()=>document.getElementById("navLinks").classList.toggle("open");
+document.querySelectorAll(".nav-link").forEach(a=>a.addEventListener("click",()=>{
+  document.getElementById("navLinks").classList.remove("open");
+}));
+
+const classifier = document.querySelector(".classifier");
+const navLinks = document.querySelectorAll(".nav-link");
+function updateSection(){
+  if(location.hash==="#klasifikasi"){
+    classifier.classList.add("show");
+    navLinks.forEach(x=>x.classList.toggle("active",x.getAttribute("href")==="#klasifikasi"));
+  }else{
+    classifier.classList.remove("show");
+    navLinks.forEach(x=>x.classList.toggle("active",x.getAttribute("href")==="#dashboard"));
+  }
+}
+window.addEventListener("hashchange",updateSection);
+updateSection();
+
+const fileInput=document.getElementById("fileInput");
+const dropzone=document.getElementById("dropzone");
+const preview=document.getElementById("preview");
+fileInput.addEventListener("change",()=>{
+  const file=fileInput.files[0];
+  if(!file)return;
+  preview.src=URL.createObjectURL(file);
+  dropzone.classList.add("has-image");
+});
+
+let lastResultIndex=0;
+async function runPrediction(){
+  if(!fileInput.files[0]){
+    alert("Silakan pilih gambar daun terlebih dahulu.");
+    return;
+  }
+  const btn=document.getElementById("predictBtn");
+  btn.disabled=true; btn.textContent="⏳ Menganalisis...";
+  try{
+    const formData=new FormData();
+    formData.append("file",fileInput.files[0]);
+    const response=await fetch("/api/predict",{method:"POST",body:formData});
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.error || "Klasifikasi gagal.");
+    showResult(data);
+  }catch(err){
+    alert(err.message || "Terjadi kesalahan saat klasifikasi.");
+  }finally{
+    btn.disabled=false; btn.textContent="🔍 Analisis Citra";
+  }
+}
+function showResult(data){
+  const index=Math.max(0,diseases.findIndex(d=>d.name.toLowerCase()===String(data.disease||data.class||"").toLowerCase()));
+  lastResultIndex=index;
+  document.getElementById("resultEmpty").style.display="none";
+  document.getElementById("resultMain").classList.add("show");
+  document.getElementById("resultTitle").textContent=data.disease || data.class;
+  document.getElementById("resultDescription").textContent=data.description || diseases[index].description;
+  const confidence=Number(data.confidence||0);
+  document.getElementById("confidenceText").textContent=confidence.toFixed(2)+"%";
+  document.getElementById("confidenceBar").style.width=Math.min(100,confidence)+"%";
+  document.getElementById("resultSolution").textContent=data.solution || "Informasi solusi belum tersedia.";
+  document.getElementById("resultSteps").innerHTML=(data.handling||[]).map(x=>`<li>${x}</li>`).join("");
+  document.getElementById("resultPrevention").innerHTML=(data.prevention||[]).map(x=>`<li>${x}</li>`).join("");
+  const top3Box=document.getElementById("top3Box");
+  const top3List=document.getElementById("top3List");
+  if(data.top3 && data.top3.length){
+    top3Box.style.display="block";
+    top3List.innerHTML=data.top3.map((x,i)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #dcebe2"><span>${i+1}. ${x.label}</span><b style="color:#087443">${Number(x.confidence).toFixed(2)}%</b></div>`).join("");
+  }
+  const gcBox=document.getElementById("gradcamBox");
+  if(data.gradcam){
+    gcBox.style.display="block";
+    document.getElementById("gradcamImage").src="/static/gradcam/"+data.gradcam+"?t="+Date.now();
+  } else { gcBox.style.display="none"; }
+}
+document.getElementById("predictBtn").addEventListener("click",runPrediction);
+document.getElementById("detailFromResult").onclick=()=>showDisease(lastResultIndex);
+</script>
+</body>
+</html>
